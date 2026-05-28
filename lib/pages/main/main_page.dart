@@ -134,13 +134,19 @@ class _MainPageState extends State<MainPage> {
                 ? StreamBuilder(
                     initialData: _selectedIndex,
                     stream: _indexSctream.stream,
-                    builder: (_, snapshot) => NavigationBar(
-                      destinations: barDestinations,
-                      selectedIndex: snapshot.data!,
-                      onDestinationSelected: onDestinationSelected,
-                      labelBehavior:
-                          NavigationDestinationLabelBehavior.onlyShowSelected,
-                    ),
+                    builder: (_, snapshot) {
+                      final hideBottomBarText = GStorage.hideBottomBarText;
+                      return NavigationBar(
+                        height: hideBottomBarText ? 56 : null,
+                        destinations: barDestinations,
+                        selectedIndex: snapshot.data!,
+                        onDestinationSelected: onDestinationSelected,
+                        labelBehavior: hideBottomBarText
+                            ? NavigationDestinationLabelBehavior.alwaysHide
+                            : NavigationDestinationLabelBehavior
+                                .onlyShowSelected,
+                      );
+                    },
                   )
                 : null,
           );

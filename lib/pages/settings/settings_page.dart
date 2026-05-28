@@ -249,7 +249,14 @@ class _SettingsPageState extends State<SettingsPage>
             icon: Icons.emoji_emotions_outlined,
             title: '显示表情',
             boxKey: SettingsBoxKey.showEmoji,
+            defaultValue: false,
+          ),
+          const SwitchItem(
+            icon: Icons.title,
+            title: '隐藏底栏文字',
+            boxKey: SettingsBoxKey.hideBottomBarText,
             defaultValue: true,
+            forceAppUpdate: true,
           ),
           // Others
           ListTile(

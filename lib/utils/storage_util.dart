@@ -270,11 +270,15 @@ class GStorage {
   }
 
   static bool get showEmoji {
-    return settings.get(SettingsBoxKey.showEmoji, defaultValue: true);
+    return settings.get(SettingsBoxKey.showEmoji, defaultValue: false);
   }
 
   static void setShowEmoji(bool value) {
     settings.put(SettingsBoxKey.showEmoji, value);
+  }
+
+  static bool get hideBottomBarText {
+    return settings.get(SettingsBoxKey.hideBottomBarText, defaultValue: true);
   }
 
   static String get installTime {
@@ -460,6 +464,7 @@ class SettingsBoxKey {
       showSquare = 'showSquare',
       recordHistory = 'recordHistory',
       showEmoji = 'showEmoji',
+      hideBottomBarText = 'hideBottomBarText',
       checkCount = 'checkCount',
       installTime = 'installTime',
       versionName = 'versionNamev',
