@@ -281,11 +281,15 @@ class GStorage {
     return settings.get(SettingsBoxKey.hideBottomBarText, defaultValue: true);
   }
 
+  static bool get hideBottomMessageTab {
+    return settings.get(SettingsBoxKey.hideBottomMessageTab,
+        defaultValue: true);
+  }
+
   static const List<String> defaultHomeTabs = [
     'FOLLOW',
     'FEED',
     'HOT',
-    'TOPIC',
     'PRODUCT',
     'COOLPIC',
   ];
@@ -295,19 +299,16 @@ class GStorage {
       SettingsBoxKey.homeTabs,
       defaultValue: defaultHomeTabs,
     );
-    final values = raw is List ? raw.map((item) => item.toString()) : <String>[];
-    final filtered = values
-        .where((item) => defaultHomeTabs.contains(item))
-        .toSet()
-        .toList();
+    final values =
+        raw is List ? raw.map((item) => item.toString()) : <String>[];
+    final filtered =
+        values.where((item) => defaultHomeTabs.contains(item)).toSet().toList();
     return filtered.isEmpty ? List<String>.from(defaultHomeTabs) : filtered;
   }
 
   static Future<void> setHomeTabs(List<String> value) async {
-    final filtered = value
-        .where((item) => defaultHomeTabs.contains(item))
-        .toSet()
-        .toList();
+    final filtered =
+        value.where((item) => defaultHomeTabs.contains(item)).toSet().toList();
     await settings.put(
       SettingsBoxKey.homeTabs,
       filtered.isEmpty ? List<String>.from(defaultHomeTabs) : filtered,
@@ -498,6 +499,7 @@ class SettingsBoxKey {
       recordHistory = 'recordHistory',
       showEmoji = 'showEmoji',
       hideBottomBarText = 'hideBottomBarText',
+      hideBottomMessageTab = 'hideBottomMessageTab',
       homeTabs = 'homeTabs',
       checkCount = 'checkCount',
       installTime = 'installTime',

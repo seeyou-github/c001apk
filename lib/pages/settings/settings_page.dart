@@ -263,6 +263,13 @@ class _SettingsPageState extends State<SettingsPage>
             defaultValue: true,
             forceAppUpdate: true,
           ),
+          const SwitchItem(
+            icon: Icons.message_outlined,
+            title: '隐藏底部消息 Tab',
+            boxKey: SettingsBoxKey.hideBottomMessageTab,
+            defaultValue: true,
+            forceAppUpdate: true,
+          ),
           // Others
           ListTile(
             title: Text(

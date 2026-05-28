@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 
 import '../../pages/home/return_top_controller.dart';
 import '../../pages/home/home_page.dart';
+import '../../pages/home/topic/home_topic_page.dart';
 import '../../pages/main/main_controller.dart';
 import '../../pages/message/message_page.dart';
 import '../../pages/settings/settings_page.dart';
@@ -52,47 +53,76 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    const pages = [
-      HomePage(),
-      MessagePage(),
-      SettingsPage(),
+    final pages = <Widget>[
+      const HomePage(),
+      const SafeArea(
+        left: false,
+        right: false,
+        bottom: false,
+        child: HomeTopicPage(tabType: TabType.TOPIC),
+      ),
+      if (!GStorage.hideBottomMessageTab) const MessagePage(),
+      const SettingsPage(),
     ];
 
-    const barDestinations = <NavigationDestination>[
-      NavigationDestination(
+    final barDestinations = <NavigationDestination>[
+      const NavigationDestination(
         selectedIcon: Icon(Icons.home),
         icon: Icon(Icons.home_outlined),
         label: '主页',
       ),
-      NavigationDestination(
-        selectedIcon: Icon(Icons.message),
-        icon: Icon(Icons.message_outlined),
-        label: '消息',
+      const NavigationDestination(
+        selectedIcon: Icon(Icons.tag),
+        icon: Icon(Icons.tag_outlined),
+        label: 'TOPIC',
       ),
-      NavigationDestination(
+      if (!GStorage.hideBottomMessageTab)
+        const NavigationDestination(
+          selectedIcon: Icon(Icons.message),
+          icon: Icon(Icons.message_outlined),
+          label: '消息',
+        ),
+      const NavigationDestination(
         selectedIcon: Icon(Icons.settings),
         icon: Icon(Icons.settings_outlined),
         label: '设置',
       ),
     ];
 
-    const railDestinations = <NavigationRailDestination>[
-      NavigationRailDestination(
+    final railDestinations = <NavigationRailDestination>[
+      const NavigationRailDestination(
         selectedIcon: Icon(Icons.home),
         icon: Icon(Icons.home_outlined),
         label: Text('主页'),
       ),
-      NavigationRailDestination(
-        selectedIcon: Icon(Icons.message),
-        icon: Icon(Icons.message_outlined),
-        label: Text('消息'),
+      const NavigationRailDestination(
+        selectedIcon: Icon(Icons.tag),
+        icon: Icon(Icons.tag_outlined),
+        label: Text('TOPIC'),
       ),
-      NavigationRailDestination(
+      if (!GStorage.hideBottomMessageTab)
+        const NavigationRailDestination(
+          selectedIcon: Icon(Icons.message),
+          icon: Icon(Icons.message_outlined),
+          label: Text('消息'),
+        ),
+      const NavigationRailDestination(
         selectedIcon: Icon(Icons.settings),
         icon: Icon(Icons.settings_outlined),
         label: Text('设置'),
       ),
     ];
+
+    if (_selectedIndex >= pages.length) {
+      _selectedIndex = pages.length - 1;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (_contrller.hasClients) {
+          _contrller.jumpToPage(_selectedIndex);
+        }
+        _indexSctream.add(_selectedIndex);
+      });
+    }
 
     return PopScope(
       canPop: false,
@@ -112,7 +142,10 @@ class _MainPageState extends State<MainPage> {
                               top: Platform.isMacOS ? 25.0 : 10.0),
                           child: NavigationRail(
                             destinations: railDestinations,
-                            selectedIndex: snapshot.data!,
+                            selectedIndex: _safeSelectedIndex(
+                              snapshot.data!,
+                              pages.length,
+                            ),
                             onDestinationSelected: onDestinationSelected,
                             labelType: NavigationRailLabelType.none,
                             extended: true,
@@ -139,7 +172,10 @@ class _MainPageState extends State<MainPage> {
                       return NavigationBar(
                         height: hideBottomBarText ? 56 : null,
                         destinations: barDestinations,
-                        selectedIndex: snapshot.data!,
+                        selectedIndex: _safeSelectedIndex(
+                          snapshot.data!,
+                          pages.length,
+                        ),
                         onDestinationSelected: onDestinationSelected,
                         labelBehavior: hideBottomBarText
                             ? NavigationDestinationLabelBehavior.alwaysHide
@@ -166,5 +202,11 @@ class _MainPageState extends State<MainPage> {
     );
     _selectedIndex = index;
     _indexSctream.add(index);
+  }
+
+  int _safeSelectedIndex(int index, int length) {
+    if (index < 0) return 0;
+    if (index >= length) return length - 1;
+    return index;
   }
 }
