@@ -227,11 +227,11 @@ class _HomeTopicPageState extends State<HomeTopicPage>
   List<Entity> _getTopicEntities(List<Datum> data) {
     final entities = data.first.entities ?? <Entity>[];
     return [
-      Entity(title: '我的关注', url: _localFollowedTopicsUrl),
+      Entity(title: '关注', url: _localFollowedTopicsUrl),
       ...entities.where((item) {
         final title = item.title ?? '';
         final url = item.url ?? '';
-        return title != '我的关注' && !url.contains('userFollowTagList');
+        return title != '关注' && !url.contains('userFollowTagList');
       }),
     ];
   }

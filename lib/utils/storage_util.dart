@@ -92,8 +92,9 @@ class GStorage {
       BlackListBoxKey.keywordFilterList,
       defaultValue: <String>[],
     );
-    return keywordFilterList
-            .firstWhereOrNull((keyword) => text.contains(keyword)) !=
+    final lowerText = text.toLowerCase();
+    return keywordFilterList.firstWhereOrNull(
+            (keyword) => lowerText.contains(keyword.toLowerCase())) !=
         null;
   }
 
@@ -368,23 +369,31 @@ class GStorage {
   }
 
   static const List<String> defaultHomeTabs = [
-    'FOLLOW',
     'FEED',
     'HOT',
+    'COOLPIC',
+    'FOLLOW',
     'PRODUCT',
+  ];
+
+  static const List<String> defaultVisibleHomeTabs = [
+    'FEED',
+    'HOT',
     'COOLPIC',
   ];
 
   static List<String> get homeTabs {
     final raw = settings.get(
       SettingsBoxKey.homeTabs,
-      defaultValue: defaultHomeTabs,
+      defaultValue: defaultVisibleHomeTabs,
     );
     final values =
         raw is List ? raw.map((item) => item.toString()) : <String>[];
     final filtered =
         values.where((item) => defaultHomeTabs.contains(item)).toSet().toList();
-    return filtered.isEmpty ? List<String>.from(defaultHomeTabs) : filtered;
+    return filtered.isEmpty
+        ? List<String>.from(defaultVisibleHomeTabs)
+        : filtered;
   }
 
   static Future<void> setHomeTabs(List<String> value) async {
@@ -392,7 +401,7 @@ class GStorage {
         value.where((item) => defaultHomeTabs.contains(item)).toSet().toList();
     await settings.put(
       SettingsBoxKey.homeTabs,
-      filtered.isEmpty ? List<String>.from(defaultHomeTabs) : filtered,
+      filtered.isEmpty ? List<String>.from(defaultVisibleHomeTabs) : filtered,
     );
   }
 
