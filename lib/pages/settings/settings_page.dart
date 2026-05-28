@@ -243,6 +243,12 @@ class _SettingsPageState extends State<SettingsPage>
             forceAppUpdate: true,
           ),
           const SwitchItem(
+            icon: Icons.photo_library_outlined,
+            title: '帖子仅显示前三张图片',
+            boxKey: SettingsBoxKey.limitPostImages,
+            defaultValue: true,
+          ),
+          const SwitchItem(
             icon: Icons.title,
             title: '隐藏底栏文字',
             boxKey: SettingsBoxKey.hideBottomBarText,

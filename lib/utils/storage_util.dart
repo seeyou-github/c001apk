@@ -301,6 +301,10 @@ class GStorage {
     return settings.get(SettingsBoxKey.hideUserAvatar, defaultValue: true);
   }
 
+  static bool get limitPostImages {
+    return settings.get(SettingsBoxKey.limitPostImages, defaultValue: true);
+  }
+
   static List<Map<String, String>> get followedTopics {
     final raw = settings.get(
       SettingsBoxKey.followedTopics,
@@ -592,6 +596,7 @@ class SettingsBoxKey {
       hideBottomBarText = 'hideBottomBarText',
       hideBottomMessageTab = 'hideBottomMessageTab',
       hideUserAvatar = 'hideUserAvatar',
+      limitPostImages = 'limitPostImages',
       followedTopics = 'followedTopics',
       homeTabs = 'homeTabs',
       checkCount = 'checkCount',
