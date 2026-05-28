@@ -1,0 +1,63 @@
+name: build_android_arm64v8a
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build_android_arm64v8a:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Android arm64-v8a APK
+        run: flutter build apk --release --target-platform android-arm64 --split-per-abi
+
+      - name: Rename Android arm64-v8a APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_file="build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
+          output_file="c001apk_android_arm64-v8a.apk"
+          test -f "${source_file}"
+          cp "${source_file}" "${output_file}"
+          test -f "${output_file}"
+
+      - name: Upload Android arm64-v8a APK to tmpfile.link
+        shell: bash
+        run: |
+          set -euo pipefail
+          file="c001apk_android_arm64-v8a.apk"
+          test -f "${file}"
+          response="$(curl -sS -X POST -F "file=@${file}" https://tmpfile.link/api/upload)"
+          echo "${response}"
+          download="$(printf '%s' "${response}" | jq -r '.downloadLinkEncoded // empty')"
+          if [ -z "${download}" ]; then
+            echo "tmpfile.link upload failed: ${response}" >&2
+            exit 1
+          fi
+          {
+            echo "## Android arm64-v8a build"
+            echo
+            echo "- File: \`${file}\`"
+            echo "- Download: ${download}"
+            echo "- Retention: tmpfile.link anonymous uploads are deleted after 7 days."
+          } >> "${GITHUB_STEP_SUMMARY}"

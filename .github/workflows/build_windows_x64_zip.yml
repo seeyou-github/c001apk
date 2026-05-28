@@ -1,0 +1,63 @@
+name: build_windows_x64_zip
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build_windows_x64_zip:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Windows x64
+        run: flutter build windows --release
+
+      - name: Package Windows x64 zip
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sourcePath = 'build/windows/x64/runner/Release'
+          $zipFile = 'c001apk_windows_x64.zip'
+          if (-not (Test-Path -LiteralPath $sourcePath -PathType Container)) {
+            throw "Windows release directory not found: $sourcePath"
+          }
+          Compress-Archive -Path "$sourcePath/*" -DestinationPath $zipFile -Force
+          if (-not (Test-Path -LiteralPath $zipFile -PathType Leaf)) {
+            throw "Windows zip was not created: $zipFile"
+          }
+
+      - name: Upload Windows x64 zip to tmpfile.link
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zipFile = 'c001apk_windows_x64.zip'
+          if (-not (Test-Path -LiteralPath $zipFile -PathType Leaf)) {
+            throw "Windows zip not found: $zipFile"
+          }
+          $response = curl.exe -sS -X POST -F "file=@$zipFile" https://tmpfile.link/api/upload
+          Write-Host $response
+          $json = $response | ConvertFrom-Json
+          if (-not $json.downloadLinkEncoded) {
+            throw "tmpfile.link upload failed: $response"
+          }
+          "## Windows x64 build" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "- File: ``$zipFile``" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "- Download: $($json.downloadLinkEncoded)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "- Retention: tmpfile.link anonymous uploads are deleted after 7 days." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
