@@ -16,9 +16,11 @@ class HomeFeedPage extends StatefulWidget {
   const HomeFeedPage({
     super.key,
     required this.tabType,
+    required this.tabIndex,
   });
 
   final TabType tabType;
+  final int tabIndex;
 
   @override
   State<HomeFeedPage> createState() => _HomeFeedPageState();
@@ -77,7 +79,7 @@ class _HomeFeedPageState extends State<HomeFeedPage>
         Get.find<ReturnTopController>(tag: 'home');
 
     _homeFeedController.returnTopController?.index.listen((index) {
-      if (index == TabType.values.indexOf(widget.tabType)) {
+      if (index == widget.tabIndex) {
         _homeFeedController.animateToTop();
       }
     });

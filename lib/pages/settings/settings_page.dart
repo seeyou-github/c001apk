@@ -195,6 +195,11 @@ class _SettingsPageState extends State<SettingsPage>
               ),
             ),
           ),
+          ListTile(
+            leading: const Icon(Icons.view_column_outlined),
+            title: const Text('主页顶栏 Tab'),
+            onTap: () => Get.toNamed('/homeTabs'),
+          ),
           DropDownMenuItem(
             icon: Icons.add_circle_outline_outlined,
             title: '关注类型',

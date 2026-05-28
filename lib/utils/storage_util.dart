@@ -281,6 +281,39 @@ class GStorage {
     return settings.get(SettingsBoxKey.hideBottomBarText, defaultValue: true);
   }
 
+  static const List<String> defaultHomeTabs = [
+    'FOLLOW',
+    'FEED',
+    'HOT',
+    'TOPIC',
+    'PRODUCT',
+    'COOLPIC',
+  ];
+
+  static List<String> get homeTabs {
+    final raw = settings.get(
+      SettingsBoxKey.homeTabs,
+      defaultValue: defaultHomeTabs,
+    );
+    final values = raw is List ? raw.map((item) => item.toString()) : <String>[];
+    final filtered = values
+        .where((item) => defaultHomeTabs.contains(item))
+        .toSet()
+        .toList();
+    return filtered.isEmpty ? List<String>.from(defaultHomeTabs) : filtered;
+  }
+
+  static Future<void> setHomeTabs(List<String> value) async {
+    final filtered = value
+        .where((item) => defaultHomeTabs.contains(item))
+        .toSet()
+        .toList();
+    await settings.put(
+      SettingsBoxKey.homeTabs,
+      filtered.isEmpty ? List<String>.from(defaultHomeTabs) : filtered,
+    );
+  }
+
   static String get installTime {
     return settings.get(SettingsBoxKey.installTime, defaultValue: '');
   }
@@ -465,6 +498,7 @@ class SettingsBoxKey {
       recordHistory = 'recordHistory',
       showEmoji = 'showEmoji',
       hideBottomBarText = 'hideBottomBarText',
+      homeTabs = 'homeTabs',
       checkCount = 'checkCount',
       installTime = 'installTime',
       versionName = 'versionNamev',
