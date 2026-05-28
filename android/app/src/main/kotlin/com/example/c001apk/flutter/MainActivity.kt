@@ -2,25 +2,15 @@ package com.example.c001apk.flutter
 
 import android.app.DownloadManager
 import android.content.Context
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageInfo
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build.VERSION.SDK_INT
-import android.os.Build.VERSION_CODES.P
 import android.os.Environment
 import android.webkit.MimeTypeMap;
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import java.io.ByteArrayOutputStream
 
 class MainActivity : FlutterFragmentActivity() {
     private val CHANNEL = "samples.flutter.dev/channel"
@@ -32,11 +22,7 @@ class MainActivity : FlutterFragmentActivity() {
             flutterEngine.dartExecutor.binaryMessenger,
             CHANNEL
         ).setMethodCallHandler { call, result ->
-            if (call.method == "getInstalledApps") {
-                Thread {
-                    result.success(getInstalledApps())
-                }.start()
-            } else if (call.method == "downloadApk") {
+            if (call.method == "downloadApk") {
                 val url = call.argument<String>("url")
                 val name = call.argument<String>("name")
                 if (url != null && name != null) {
@@ -108,51 +94,6 @@ class MainActivity : FlutterFragmentActivity() {
         } catch (e: Exception) {
             return false
         }
-    }
-
-    private fun getInstalledApps(): List<Map<String, Any?>> {
-        var appList = packageManager.getInstalledApplications(0).filter { info ->
-            (info.flags and ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM
-        }
-        return appList.map { info ->
-            val packageInfo = packageManager.getPackageInfo(info.packageName, 0)
-            mapOf(
-                "icon" to drawableToByteArray(info.loadIcon(packageManager)),
-                "appName" to packageManager.getApplicationLabel(info),
-                "packageName" to info.packageName,
-                "versionName" to packageInfo.versionName,
-                "versionCode" to getVersionCode(packageInfo).toString(),
-                "lastUpdateTime" to packageInfo.lastUpdateTime.toString(),
-            )
-        }
-    }
-
-    private fun drawableToByteArray(drawable: Drawable): ByteArray {
-        val bitmap = drawableToBitmap(drawable)
-        ByteArrayOutputStream().use { stream ->
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-            return stream.toByteArray()
-        }
-    }
-
-    private fun drawableToBitmap(drawable: Drawable): Bitmap {
-        if (drawable is BitmapDrawable) {
-            return drawable.bitmap
-        }
-        val bitmap = Bitmap.createBitmap(
-            drawable.intrinsicWidth,
-            drawable.intrinsicHeight,
-            Bitmap.Config.ARGB_8888
-        )
-        val canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
-        drawable.draw(canvas)
-        return bitmap
-    }
-
-    private fun getVersionCode(packageInfo: PackageInfo): Long {
-        return if (SDK_INT < P) packageInfo.versionCode.toLong()
-        else packageInfo.longVersionCode
     }
 
 }

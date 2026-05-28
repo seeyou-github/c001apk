@@ -10,7 +10,6 @@ import '../pages/dyh/dyh_page.dart';
 import '../pages/feed/feed_page.dart';
 import '../pages/ffflist/ffflist_page.dart';
 import '../pages/history/history_page.dart';
-import '../pages/home/app/update/app_update_page.dart';
 import '../pages/login/login_page.dart';
 import '../pages/main/main_page.dart';
 import '../pages/noitfication/notification_page.dart';
@@ -84,10 +83,6 @@ class AppPages {
     _getPage(
       name: '/webview',
       page: () => const WebviewPage(),
-    ),
-    _getPage(
-      name: '/appUpdate',
-      page: () => const AppUpdatePage(),
     ),
     _getPage(
       name: '/carousel',

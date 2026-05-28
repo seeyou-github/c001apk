@@ -22,9 +22,6 @@ class Api {
   static String checkLoginInfo =
       '${Constants.URL_API_SERVICE}/v6/account/checkLoginInfo';
 
-  static String getAppsUpdate =
-      '${Constants.URL_API_SERVICE}/v6/apk/checkUpdate';
-
   static String getDyhDetail =
       '${Constants.URL_API_SERVICE}/v6/dyhArticle/list';
 

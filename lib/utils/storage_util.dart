@@ -277,14 +277,6 @@ class GStorage {
     settings.put(SettingsBoxKey.showEmoji, value);
   }
 
-  static bool get checkUpdate {
-    return settings.get(SettingsBoxKey.checkUpdate, defaultValue: true);
-  }
-
-  static void setCheckUpdate(bool value) {
-    settings.put(SettingsBoxKey.checkUpdate, value);
-  }
-
   static String get installTime {
     return settings.get(SettingsBoxKey.installTime, defaultValue: '');
   }
@@ -468,7 +460,6 @@ class SettingsBoxKey {
       showSquare = 'showSquare',
       recordHistory = 'recordHistory',
       showEmoji = 'showEmoji',
-      checkUpdate = 'checkUpdate',
       checkCount = 'checkCount',
       installTime = 'installTime',
       versionName = 'versionNamev',

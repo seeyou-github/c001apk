@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -253,13 +251,6 @@ class _SettingsPageState extends State<SettingsPage>
             boxKey: SettingsBoxKey.showEmoji,
             defaultValue: true,
           ),
-          if (Platform.isAndroid)
-            const SwitchItem(
-              icon: Icons.system_update,
-              title: '检查更新',
-              boxKey: SettingsBoxKey.checkUpdate,
-              defaultValue: true,
-            ),
           // Others
           ListTile(
             title: Text(

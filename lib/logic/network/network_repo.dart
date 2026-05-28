@@ -239,18 +239,6 @@ class NetworkRepo {
     );
   }
 
-  static Future<Response> getAppsUpdate(
-    String pkgs,
-  ) async {
-    return Request().post(
-      Api.getAppsUpdate,
-      queryParameters: {'coolmarket_beta': '0'},
-      data: FormData.fromMap({
-        'pkgs': pkgs,
-      }),
-    );
-  }
-
   static Future<Response> checkLoginInfo() async {
     return Request().get(Api.checkLoginInfo);
   }

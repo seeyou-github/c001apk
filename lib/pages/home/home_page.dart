@@ -1,16 +1,13 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../pages/home/app/app_list_page.dart';
 import '../../pages/home/feed/home_feed_page.dart';
 import '../../pages/home/return_top_controller.dart';
 import '../../pages/home/topic/home_topic_page.dart';
 import '../../utils/utils.dart';
 
 // ignore: constant_identifier_names
-enum TabType { FOLLOW, APP, FEED, HOT, TOPIC, PRODUCT, COOLPIC, NONE }
+enum TabType { FOLLOW, FEED, HOT, TOPIC, PRODUCT, COOLPIC, NONE }
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,7 +27,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   final _pages = [
     const HomeFeedPage(tabType: TabType.FOLLOW),
-    if (Platform.isAndroid) const AppListPage(),
     const HomeFeedPage(tabType: TabType.FEED),
     const HomeFeedPage(tabType: TabType.HOT),
     const HomeTopicPage(tabType: TabType.TOPIC),
@@ -39,11 +35,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   ];
 
   void scrollToTop(int index) {
-    _pageScrollController.setIndex(Platform.isAndroid
-        ? index
-        : index == 0
-            ? 0
-            : index + 1);
+    _pageScrollController.setIndex(index);
   }
 
   @override
@@ -51,13 +43,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.initState();
 
     _tabList.removeLast();
-    if (!Platform.isAndroid) {
-      _tabList.removeAt(1);
-    }
 
     _tabController = TabController(
       vsync: this,
-      initialIndex: Platform.isAndroid ? 2 : 1,
+      initialIndex: 1,
       length: _tabList.length,
     );
 
