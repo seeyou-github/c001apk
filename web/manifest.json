@@ -1,6 +1,6 @@
 {
-    "name": "c001apk-flutter",
-    "short_name": "c001apk-flutter",
+    "name": "CoolAPK",
+    "short_name": "CoolAPK",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

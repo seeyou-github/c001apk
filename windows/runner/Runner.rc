@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "Integral" "\0"
-            VALUE "FileDescription", "c001apk-flutter" "\0"
+            VALUE "FileDescription", "CoolAPK" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "c001apk-flutter" "\0"
+            VALUE "InternalName", "CoolAPK" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 Integral All rights reserved." "\0"
-            VALUE "OriginalFilename", "c001apk-flutter.exe" "\0"
-            VALUE "ProductName", "c001apk-flutter" "\0"
+            VALUE "OriginalFilename", "CoolAPK.exe" "\0"
+            VALUE "ProductName", "CoolAPK" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
