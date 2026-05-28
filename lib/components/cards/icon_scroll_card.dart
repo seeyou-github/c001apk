@@ -58,6 +58,7 @@ class IconScrollCard extends StatelessWidget {
             clipNetworkImage(
               data.userAvatar.orEmpty,
               isAvatar: true,
+              avatarText: data.username,
               width: width - 10,
               height: width - 10,
             ),

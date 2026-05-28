@@ -42,7 +42,7 @@ class TopicController extends CommonController {
       Datum data = response.response;
       id = data.id.toString();
       title = data.title;
-      logo = data.logo;
+      logo = data.logo ?? data.pic ?? data.cover ?? data.coverPic;
       entityType = data.entityType;
       hotNumTxt = data.hotNumTxt;
       commentnumTxt = data.commentnumTxt;

@@ -48,6 +48,7 @@ class ChatCard extends StatelessWidget {
                   child: clipNetworkImage(
                     data.fromUserAvatar ?? '',
                     isAvatar: true,
+                    avatarText: data.fromusername ?? data.messageUsername,
                     width: 40,
                     height: 40,
                   ),
@@ -89,6 +90,7 @@ class ChatCard extends StatelessWidget {
                   child: clipNetworkImage(
                     data.fromUserAvatar ?? '',
                     isAvatar: true,
+                    avatarText: data.fromusername ?? data.messageUsername,
                     width: 40,
                     height: 40,
                   ),

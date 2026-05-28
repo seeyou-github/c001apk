@@ -32,6 +32,7 @@ class LikeCard extends StatelessWidget {
                 child: clipNetworkImage(
                   data.likeUserInfo?.userAvatar ?? '',
                   isAvatar: true,
+                  avatarText: data.likeUserInfo?.username,
                   width: 30,
                   height: 30,
                 ),

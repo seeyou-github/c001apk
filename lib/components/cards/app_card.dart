@@ -66,6 +66,11 @@ class AppCard extends StatelessWidget {
                     .contains(appCardType) ||
                 (appCardType == AppCardType.RECENT &&
                     data.targetType == 'user'),
+            avatarText: appCardType == AppCardType.USER
+                ? data.userInfo?.username
+                : appCardType == AppCardType.CONTACTS
+                    ? data.userInfo?.username ?? data.fUserInfo?.username
+                    : data.username,
             radius: 8,
             width: 40,
             height: 40,

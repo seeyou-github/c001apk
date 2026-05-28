@@ -12,7 +12,9 @@ class BlackListController extends GetxController {
 
   late final String key = type == BlackListType.user
       ? BlackListBoxKey.userBlackList
-      : BlackListBoxKey.topicBlackList;
+      : type == BlackListType.topic
+          ? BlackListBoxKey.topicBlackList
+          : BlackListBoxKey.keywordFilterList;
   late final Box blackList = GStorage.blackList;
   RxList<String> dataList = <String>[].obs;
 

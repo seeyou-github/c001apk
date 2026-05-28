@@ -87,6 +87,16 @@ class GStorage {
         null;
   }
 
+  static bool checkKeyword(String text) {
+    List<String> keywordFilterList = blackList.get(
+      BlackListBoxKey.keywordFilterList,
+      defaultValue: <String>[],
+    );
+    return keywordFilterList
+            .firstWhereOrNull((keyword) => text.contains(keyword)) !=
+        null;
+  }
+
   static String _toString(dynamic value) {
     return value is String ? value : value.toString();
   }
@@ -286,6 +296,10 @@ class GStorage {
         defaultValue: true);
   }
 
+  static bool get hideUserAvatar {
+    return settings.get(SettingsBoxKey.hideUserAvatar, defaultValue: true);
+  }
+
   static List<Map<String, String>> get followedTopics {
     final raw = settings.get(
       SettingsBoxKey.followedTopics,
@@ -298,6 +312,7 @@ class GStorage {
               'title': item['title']?.toString() ?? '',
               'url': item['url']?.toString() ?? '',
               'logo': item['logo']?.toString() ?? '',
+              'localLogo': item['localLogo']?.toString() ?? '',
               'hotNumTxt': item['hotNumTxt']?.toString() ?? '',
               'commentnumTxt': item['commentnumTxt']?.toString() ?? '',
             })
@@ -324,11 +339,32 @@ class GStorage {
       'title': title,
       'url': url ?? '',
       'logo': logo ?? '',
+      'localLogo': '',
       'hotNumTxt': hotNumTxt ?? '',
       'commentnumTxt': commentnumTxt ?? '',
     });
     await settings.put(SettingsBoxKey.followedTopics, topics);
     return true;
+  }
+
+  static Future<void> updateFollowedTopic(
+    String title, {
+    String? url,
+    String? logo,
+    String? localLogo,
+  }) async {
+    final topics = followedTopics;
+    final index = topics.indexWhere((item) => item['title'] == title);
+    if (index < 0) {
+      return;
+    }
+    topics[index] = {
+      ...topics[index],
+      if (url != null) 'url': url,
+      if (logo != null) 'logo': logo,
+      if (localLogo != null) 'localLogo': localLogo,
+    };
+    await settings.put(SettingsBoxKey.followedTopics, topics);
   }
 
   static const List<String> defaultHomeTabs = [
@@ -527,7 +563,8 @@ class GStorage {
 
 class BlackListBoxKey {
   static const String userBlackList = 'userBlackList',
-      topicBlackList = 'topicBlackList';
+      topicBlackList = 'topicBlackList',
+      keywordFilterList = 'keywordFilterList';
 }
 
 class SettingsBoxKey {
@@ -545,6 +582,7 @@ class SettingsBoxKey {
       showEmoji = 'showEmoji',
       hideBottomBarText = 'hideBottomBarText',
       hideBottomMessageTab = 'hideBottomMessageTab',
+      hideUserAvatar = 'hideUserAvatar',
       followedTopics = 'followedTopics',
       homeTabs = 'homeTabs',
       checkCount = 'checkCount',

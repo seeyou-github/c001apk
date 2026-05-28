@@ -90,6 +90,7 @@ class NotificationCard extends StatelessWidget {
                     child: clipNetworkImage(
                       data.fromUserAvatar ?? '',
                       isAvatar: true,
+                      avatarText: data.fromusername ?? data.username,
                       width: 30,
                       height: 30,
                     ),

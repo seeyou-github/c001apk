@@ -376,6 +376,7 @@ Widget header(
                   width: 35,
                   height: 35,
                   isAvatar: true,
+                  avatarText: data.userInfo?.username ?? data.username,
                 ),
               ),
               const SizedBox(width: 10),

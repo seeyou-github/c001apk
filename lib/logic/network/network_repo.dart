@@ -470,7 +470,11 @@ class NetworkRepo {
               .get(BlackListBoxKey.userBlackList, defaultValue: <String>[]);
           List<String> topicBlackList = GStorage.blackList
               .get(BlackListBoxKey.topicBlackList, defaultValue: <String>[]);
+          List<String> keywordFilterList = GStorage.blackList
+              .get(BlackListBoxKey.keywordFilterList, defaultValue: <String>[]);
           List<Datum> filterList = responseData.data!.where((item) {
+            final keywordText =
+                '${item.title},${item.messageTitle},${item.message},${item.tags},${item.ttitle},${item.username},${item.deviceTitle},${item.relationRows?.getOrNull(0)?.title}';
             return item.entityTemplate == 'refreshCard' &&
                     item.title.orEmpty.contains('没有')
                 ? true
@@ -482,7 +486,11 @@ class NetworkRepo {
                     topicBlackList.firstWhereOrNull((keyword) =>
                             '${item.title},${item.tags},${item.ttitle},${item.relationRows?.getOrNull(0)?.title}'
                                 .contains(keyword)) ==
-                        null;
+                        null &&
+                    (!['feed', 'feed_reply'].contains(item.entityType) ||
+                        keywordFilterList.firstWhereOrNull(
+                                (keyword) => keywordText.contains(keyword)) ==
+                            null);
           }).toList();
           return LoadingState.success(filterList);
         } else {

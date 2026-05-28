@@ -44,6 +44,7 @@ class MessageHeaderCard extends StatelessWidget {
                   child: clipNetworkImage(
                     userInfo?.userAvatar ?? GStorage.userAvatar,
                     isAvatar: true,
+                    avatarText: userInfo?.username ?? GlobalData().username,
                     width: 45,
                     height: 45,
                   ),

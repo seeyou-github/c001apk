@@ -43,6 +43,7 @@ class MessageCard extends StatelessWidget {
               child: clipNetworkImage(
                 data.messageUserAvatar ?? '',
                 isAvatar: true,
+                avatarText: data.messageUsername,
                 width: 40,
                 height: 40,
               ),

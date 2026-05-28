@@ -12,7 +12,6 @@ import '../../constants/constants.dart';
 import '../../pages/blacklist/black_list_page.dart' show BlackListType;
 import '../../utils/cache_util.dart';
 import '../../utils/storage_util.dart';
-import '../../utils/utils.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -20,9 +19,6 @@ class SettingsPage extends StatefulWidget {
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
-
-// ignore: constant_identifier_names
-enum SettingsMenuItem { Feedback, About }
 
 // ignore: constant_identifier_names
 enum FollowType { ALL, USER, TOPIC, PRODUCT, APP }
@@ -61,31 +57,6 @@ class _SettingsPageState extends State<SettingsPage>
     return Scaffold(
       appBar: AppBar(
         title: const Text('设置'),
-        actions: [
-          PopupMenuButton(
-            onSelected: (SettingsMenuItem item) {
-              switch (item) {
-                case SettingsMenuItem.Feedback:
-                  Utils.launchURL(Constants.URL_SOURCE_CODE);
-                  break;
-                case SettingsMenuItem.About:
-                  showDialog<void>(
-                    context: context,
-                    builder: (context) {
-                      return MAboutDialog(version: _version);
-                    },
-                  );
-                  break;
-              }
-            },
-            itemBuilder: (context) => SettingsMenuItem.values
-                .map((item) => PopupMenuItem<SettingsMenuItem>(
-                      value: item,
-                      child: Text(item.name),
-                    ))
-                .toList(),
-          )
-        ],
       ),
       body: ListView(
         physics: const AlwaysScrollableScrollPhysics(
@@ -181,6 +152,14 @@ class _SettingsPageState extends State<SettingsPage>
             ),
           ),
           ListTile(
+            title: const Text('关键字过滤'),
+            leading: const Icon(Icons.filter_alt_outlined),
+            onTap: () => Get.toNamed(
+              '/blacklist/',
+              arguments: {'type': BlackListType.keyword},
+            ),
+          ),
+          ListTile(
             title: const Text('字体比例'),
             subtitle: Text('${GStorage.fontScale.toStringAsFixed(2)}x'),
             leading: const Icon(Icons.text_fields),
@@ -255,6 +234,13 @@ class _SettingsPageState extends State<SettingsPage>
             title: '显示表情',
             boxKey: SettingsBoxKey.showEmoji,
             defaultValue: false,
+          ),
+          const SwitchItem(
+            icon: Icons.account_circle_outlined,
+            title: '不显示用户头像图片',
+            boxKey: SettingsBoxKey.hideUserAvatar,
+            defaultValue: true,
+            forceAppUpdate: true,
           ),
           const SwitchItem(
             icon: Icons.title,

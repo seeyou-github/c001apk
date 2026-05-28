@@ -104,6 +104,7 @@ class FeedReplyCard extends StatelessWidget {
                     child: clipNetworkImage(
                       data.userAvatar ?? '',
                       isAvatar: true,
+                      avatarText: data.username,
                       height: 30,
                       width: 30,
                     ),

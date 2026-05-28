@@ -85,6 +85,7 @@ class UserInfoCard extends StatelessWidget {
                   child: clipNetworkImage(
                     data.userAvatar ?? '',
                     isAvatar: true,
+                    avatarText: data.username,
                     width: 76,
                     height: 76,
                   ),

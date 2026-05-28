@@ -14,7 +14,7 @@ import '../../components/cards/search_history_card.dart';
 import '../../pages/blacklist/black_list_controller.dart';
 import '../../utils/date_util.dart';
 
-enum BlackListType { user, topic }
+enum BlackListType { user, topic, keyword }
 
 class BlackListPage extends StatefulWidget {
   const BlackListPage({super.key});
@@ -61,7 +61,11 @@ class _BlackListPageState extends State<BlackListPage> {
             },
             decoration: InputDecoration(
               border: InputBorder.none,
-              hintText: _type == BlackListType.user ? 'uid' : 'topic',
+              hintText: switch (_type) {
+                BlackListType.user => 'uid',
+                BlackListType.topic => 'topic',
+                BlackListType.keyword => 'keyword',
+              },
               hintStyle: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.normal,
@@ -206,19 +210,21 @@ class _BlackListPageState extends State<BlackListPage> {
                       .map(
                         (text) => SearchHistoryCard(
                           text: text,
-                          onTap: () {
-                            try {
-                              Get.toNamed(
-                                  '/${_type == BlackListType.user ? 'u' : 't'}/$text');
-                            } catch (e) {
-                              try {
-                                Get.toNamed(
-                                    '/${_type == BlackListType.user ? 'u' : 't'}/${Uri.encodeComponent(text)}');
-                              } catch (e) {
-                                debugPrint('failed to view $text');
-                              }
-                            }
-                          },
+                          onTap: _type == BlackListType.keyword
+                              ? () {}
+                              : () {
+                                  try {
+                                    Get.toNamed(
+                                        '/${_type == BlackListType.user ? 'u' : 't'}/$text');
+                                  } catch (e) {
+                                    try {
+                                      Get.toNamed(
+                                          '/${_type == BlackListType.user ? 'u' : 't'}/${Uri.encodeComponent(text)}');
+                                    } catch (e) {
+                                      debugPrint('failed to view $text');
+                                    }
+                                  }
+                                },
                           onLongPress: () => _controller.handleData(text, true),
                         ),
                       )
