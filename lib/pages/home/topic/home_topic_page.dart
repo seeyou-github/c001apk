@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../components/cards/app_card.dart';
+import '../../../logic/model/feed/datum.dart';
+import '../../../logic/model/feed/entity.dart';
 import '../../../pages/carousel/carousel_page.dart';
 import '../../../pages/home/topic/controller.dart';
 import '../../../pages/home/home_page.dart' show TabType;
+import '../../../utils/storage_util.dart';
 
 class HomeTopicPage extends StatefulWidget {
   const HomeTopicPage({super.key, required this.tabType});
@@ -18,6 +24,9 @@ class _HomeTopicPageState extends State<HomeTopicPage>
     with AutomaticKeepAliveClientMixin {
   late HomeTopicController _homeTopicController;
   late PageController _controller;
+  StreamSubscription<dynamic>? _followedTopicsSubscription;
+
+  static const _localFollowedTopicsUrl = 'local://followedTopics';
 
   @override
   bool get wantKeepAlive => true;
@@ -25,16 +34,22 @@ class _HomeTopicPageState extends State<HomeTopicPage>
   @override
   void initState() {
     super.initState();
-    _controller =
-        PageController(initialPage: widget.tabType == TabType.TOPIC ? 1 : 0);
+    _controller = PageController();
     _homeTopicController = Get.put(
       HomeTopicController(tabType: widget.tabType),
       tag: widget.tabType.name,
     );
+    _followedTopicsSubscription =
+        GStorage.settings.watch(key: SettingsBoxKey.followedTopics).listen((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
   void dispose() {
+    _followedTopicsSubscription?.cancel();
     _controller.dispose();
     Get.delete<HomeTopicController>(
       tag: widget.tabType.name,
@@ -47,101 +62,10 @@ class _HomeTopicPageState extends State<HomeTopicPage>
     super.build(context);
     return _homeTopicController.obx(
       (data) {
-        return Row(
-          children: [
-            Expanded(
-              flex: 22,
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(
-                  parent: BouncingScrollPhysics(),
-                ),
-                itemCount: widget.tabType == TabType.TOPIC
-                    ? data![0].entities!.length
-                    : data!.length,
-                itemBuilder: (context, index) => IntrinsicHeight(
-                  child: Obx(
-                    () => InkWell(
-                      onTap: () {
-                        _homeTopicController.currentIndex.value = index;
-                        _controller.jumpToPage(index);
-                      },
-                      child: Ink(
-                        color: index == _homeTopicController.currentIndex.value
-                            ? Theme.of(context).colorScheme.onInverseSurface
-                            : Colors.transparent,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              height: double.infinity,
-                              width: 3,
-                              color: index ==
-                                      _homeTopicController.currentIndex.value
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Colors.transparent,
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: Container(
-                                alignment: Alignment.center,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
-                                child: Text(
-                                  widget.tabType == TabType.TOPIC
-                                      ? data[0]
-                                          .entities![index]
-                                          .title
-                                          .toString()
-                                      : data[index].title.toString(),
-                                  style: TextStyle(
-                                    color: index ==
-                                            _homeTopicController
-                                                .currentIndex.value
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                    fontSize: 15,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 78,
-              child: Container(
-                color: Theme.of(context).colorScheme.onInverseSurface,
-                child: PageView.builder(
-                  controller: _controller,
-                  scrollDirection: Axis.vertical,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: widget.tabType == TabType.TOPIC
-                      ? data[0].entities!.length
-                      : data.length,
-                  itemBuilder: (context, index) => CarouselPage(
-                    isInit: false,
-                    url: widget.tabType == TabType.TOPIC
-                        ? data[0].entities![index].url
-                        : data[index].url,
-                    title: widget.tabType == TabType.TOPIC
-                        ? data[0].entities![index].title
-                        : data[index].title,
-                    isHomeCard: true,
-                  ),
-                ),
-              ),
-            )
-          ],
-        );
+        if (widget.tabType == TabType.TOPIC) {
+          return _buildTopicLayout(data!);
+        }
+        return _buildProductLayout(data!);
       },
       onEmpty: GestureDetector(
         onTap: _homeTopicController.onReload,
@@ -159,6 +83,195 @@ class _HomeTopicPageState extends State<HomeTopicPage>
           child: Text(error ?? 'unknown error'),
         ),
       ),
+    );
+  }
+
+  Widget _buildTopicLayout(List<Datum> data) {
+    final entities = _getTopicEntities(data);
+    return Row(
+      children: [
+        _buildSideList(
+          itemCount: entities.length,
+          titleBuilder: (index) => entities[index].title.toString(),
+          onTap: (index) {
+            _homeTopicController.currentIndex.value = index;
+            _controller.jumpToPage(index);
+          },
+        ),
+        _buildContent(
+          itemCount: entities.length,
+          itemBuilder: (context, index) {
+            final entity = entities[index];
+            if (_isLocalFollowedTopics(entity)) {
+              return const _LocalFollowedTopicsPage();
+            }
+            return CarouselPage(
+              isInit: false,
+              url: entity.url,
+              title: entity.title,
+              isHomeCard: true,
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProductLayout(List<Datum> data) {
+    return Row(
+      children: [
+        _buildSideList(
+          itemCount: data.length,
+          titleBuilder: (index) => data[index].title.toString(),
+          onTap: (index) {
+            _homeTopicController.currentIndex.value = index;
+            _controller.jumpToPage(index);
+          },
+        ),
+        _buildContent(
+          itemCount: data.length,
+          itemBuilder: (context, index) => CarouselPage(
+            isInit: false,
+            url: data[index].url,
+            title: data[index].title,
+            isHomeCard: true,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSideList({
+    required int itemCount,
+    required String Function(int index) titleBuilder,
+    required void Function(int index) onTap,
+  }) {
+    return Expanded(
+      flex: 22,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        itemCount: itemCount,
+        itemBuilder: (context, index) => IntrinsicHeight(
+          child: Obx(
+            () => InkWell(
+              onTap: () => onTap(index),
+              child: Ink(
+                color: index == _homeTopicController.currentIndex.value
+                    ? Theme.of(context).colorScheme.onInverseSurface
+                    : Colors.transparent,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      height: double.infinity,
+                      width: 3,
+                      color: index == _homeTopicController.currentIndex.value
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.transparent,
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Text(
+                          titleBuilder(index),
+                          style: TextStyle(
+                            color:
+                                index == _homeTopicController.currentIndex.value
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.onSurface,
+                            fontSize: 15,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent({
+    required int itemCount,
+    required Widget Function(BuildContext context, int index) itemBuilder,
+  }) {
+    return Expanded(
+      flex: 78,
+      child: Container(
+        color: Theme.of(context).colorScheme.onInverseSurface,
+        child: PageView.builder(
+          controller: _controller,
+          scrollDirection: Axis.vertical,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: itemCount,
+          itemBuilder: itemBuilder,
+        ),
+      ),
+    );
+  }
+
+  List<Entity> _getTopicEntities(List<Datum> data) {
+    final entities = data.first.entities ?? <Entity>[];
+    return [
+      Entity(title: '我的关注', url: _localFollowedTopicsUrl),
+      ...entities.where((item) {
+        final title = item.title ?? '';
+        final url = item.url ?? '';
+        return title != '我的关注' && !url.contains('userFollowTagList');
+      }),
+    ];
+  }
+
+  bool _isLocalFollowedTopics(Entity entity) {
+    return entity.url == _localFollowedTopicsUrl;
+  }
+}
+
+class _LocalFollowedTopicsPage extends StatelessWidget {
+  const _LocalFollowedTopicsPage();
+
+  @override
+  Widget build(BuildContext context) {
+    final topics = GStorage.followedTopics
+        .where((item) => !GStorage.checkTopic(item['title'] ?? ''))
+        .toList();
+    if (topics.isEmpty) {
+      return const Center(child: Text('暂无关注话题'));
+    }
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
+      padding: const EdgeInsets.all(10),
+      itemCount: topics.length,
+      itemBuilder: (context, index) {
+        final title = topics[index]['title'] ?? '';
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: AppCard(
+            appCardType: AppCardType.TOPIC,
+            isHomeCard: true,
+            data: Datum(
+              title: title,
+              url: topics[index]['url']!.isNotEmpty
+                  ? topics[index]['url']
+                  : '/t/$title',
+              logo: topics[index]['logo'],
+              hotNumTxt: topics[index]['hotNumTxt'],
+              commentnumTxt: topics[index]['commentnumTxt'],
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -480,7 +480,7 @@ class NetworkRepo {
                             .contains(item.entityTemplate)) &&
                     !userBlackList.contains(item.uid.toString()) &&
                     topicBlackList.firstWhereOrNull((keyword) =>
-                            '${item.tags},${item.ttitle},${item.relationRows?.getOrNull(0)?.title}'
+                            '${item.title},${item.tags},${item.ttitle},${item.relationRows?.getOrNull(0)?.title}'
                                 .contains(keyword)) ==
                         null;
           }).toList();

@@ -286,6 +286,51 @@ class GStorage {
         defaultValue: true);
   }
 
+  static List<Map<String, String>> get followedTopics {
+    final raw = settings.get(
+      SettingsBoxKey.followedTopics,
+      defaultValue: <dynamic>[],
+    );
+    if (raw is! List) return <Map<String, String>>[];
+    return raw
+        .whereType<Map>()
+        .map((item) => {
+              'title': item['title']?.toString() ?? '',
+              'url': item['url']?.toString() ?? '',
+              'logo': item['logo']?.toString() ?? '',
+              'hotNumTxt': item['hotNumTxt']?.toString() ?? '',
+              'commentnumTxt': item['commentnumTxt']?.toString() ?? '',
+            })
+        .where((item) => item['title']!.isNotEmpty)
+        .toList();
+  }
+
+  static bool isFollowedTopic(String title) {
+    return followedTopics.any((item) => item['title'] == title);
+  }
+
+  static Future<bool> followTopic({
+    required String title,
+    String? url,
+    String? logo,
+    String? hotNumTxt,
+    String? commentnumTxt,
+  }) async {
+    if (title.isEmpty || isFollowedTopic(title)) {
+      return false;
+    }
+    final topics = followedTopics;
+    topics.insert(0, {
+      'title': title,
+      'url': url ?? '',
+      'logo': logo ?? '',
+      'hotNumTxt': hotNumTxt ?? '',
+      'commentnumTxt': commentnumTxt ?? '',
+    });
+    await settings.put(SettingsBoxKey.followedTopics, topics);
+    return true;
+  }
+
   static const List<String> defaultHomeTabs = [
     'FOLLOW',
     'FEED',
@@ -500,6 +545,7 @@ class SettingsBoxKey {
       showEmoji = 'showEmoji',
       hideBottomBarText = 'hideBottomBarText',
       hideBottomMessageTab = 'hideBottomMessageTab',
+      followedTopics = 'followedTopics',
       homeTabs = 'homeTabs',
       checkCount = 'checkCount',
       installTime = 'installTime',

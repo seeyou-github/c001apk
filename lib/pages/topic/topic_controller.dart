@@ -15,7 +15,10 @@ class TopicController extends CommonController {
   String? id;
 
   String? title;
+  String? logo;
   String? entityType;
+  dynamic hotNumTxt;
+  dynamic commentnumTxt;
   List<TabList>? tabList;
   RxInt initialIndex = 0.obs;
   Rx<LoadingState> topicState = LoadingState.loading().obs;
@@ -39,7 +42,10 @@ class TopicController extends CommonController {
       Datum data = response.response;
       id = data.id.toString();
       title = data.title;
+      logo = data.logo;
       entityType = data.entityType;
+      hotNumTxt = data.hotNumTxt;
+      commentnumTxt = data.commentnumTxt;
       tabList = data.tabList;
       String selectedTab = data.selectedTab!;
       initialIndex.value =

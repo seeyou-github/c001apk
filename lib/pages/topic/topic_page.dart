@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/dialog/dialog_route.dart';
 import 'package:share_plus/share_plus.dart';
@@ -33,6 +34,7 @@ class _TopicPageState extends State<TopicPage> with TickerProviderStateMixin {
   final String? _id = Get.parameters['id'];
 
   bool _shouldShowActions = false;
+  bool _showTopicToolbar = true;
 
   TabController? _tabController;
   late final ReturnTopController _pageScrollController;
@@ -85,6 +87,19 @@ class _TopicPageState extends State<TopicPage> with TickerProviderStateMixin {
   void setShouldShowActions(int index) {
     _shouldShowActions = _topicController.entityType == 'product' &&
         _topicController.tabList![index].title == '讨论';
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+    final shouldShowToolbar = notification.metrics.pixels <= 0;
+    if (shouldShowToolbar != _showTopicToolbar) {
+      setState(() {
+        _showTopicToolbar = shouldShowToolbar;
+      });
+    }
+    return false;
   }
 
   Widget _buildBody(LoadingState topicState) {
@@ -169,11 +184,15 @@ class _TopicPageState extends State<TopicPage> with TickerProviderStateMixin {
                     )
                   : null,
               appBar: AppBar(
-                title: Text(
-                  _topicController.title!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                toolbarHeight: _showTopicToolbar ? kToolbarHeight : 0,
+                automaticallyImplyLeading: _showTopicToolbar,
+                title: _showTopicToolbar
+                    ? Text(
+                        _topicController.title!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    : null,
                 bottom: _topicController.isBlocked
                     ? const PreferredSize(
                         preferredSize: Size.zero, child: Divider(height: 1))
@@ -185,136 +204,164 @@ class _TopicPageState extends State<TopicPage> with TickerProviderStateMixin {
                             .toList(),
                         onTap: (value) {
                           if (!_tabController!.indexIsChanging) {
+                            setState(() {
+                              _showTopicToolbar = true;
+                            });
                             _pageScrollController.setIndex(value);
                           }
                         },
                       ),
-                actions: [
-                  if (!_topicController.isBlocked)
-                    IconButton(
-                      onPressed: () => Get.toNamed('/search', parameters: {
-                        'title': _topicController.title!,
-                        'pageType': _topicController.entityType == 'topic'
-                            ? 'tag'
-                            : 'product_phone',
-                        'pageParam': _topicController.entityType == 'topic'
-                            ? _topicController.title!
-                            : _topicController.id!,
-                      }),
-                      icon: const Icon(Icons.search),
-                      tooltip: 'Search',
-                    ),
-                  PopupMenuButton(
-                    onSelected: (TopicMenuItem item) {
-                      switch (item) {
-                        case TopicMenuItem.Copy:
-                          Utils.copyText(Utils.getShareUri(
-                            _topicController.entityType == 'topic'
-                                ? _topicController.title!
-                                : _topicController.id!,
-                            _topicController.entityType == 'topic'
-                                ? ShareType.t
-                                : ShareType.product,
-                          ).toString());
-                          break;
-                        case TopicMenuItem.Share:
-                          SharePlus.instance.share(ShareParams(
-                              uri: Utils.getShareUri(
-                            _topicController.entityType == 'topic'
-                                ? _topicController.title!
-                                : _topicController.id!,
-                            _topicController.entityType == 'topic'
-                                ? ShareType.t
-                                : ShareType.product,
-                          )));
-                          break;
-                        case TopicMenuItem.Sort:
-                          _showPopupMenu();
-                          break;
-                        case TopicMenuItem.Follow:
-                          if (GlobalData().isLogin) {
-                            if (_topicController.entityType == 'topic') {
-                              _topicController.onGetFollow(
-                                _topicController.isFollow,
-                                _topicController.isFollow
-                                    ? "/v6/feed/unFollowTag"
-                                    : "/v6/feed/followTag",
-                                tag: _topicController.title,
-                              );
-                            } else {
-                              _topicController.postLikeDeleteFollow(
-                                _topicController.id,
-                                null,
-                                isProduct: true,
-                                isFollow: _topicController.isFollow,
-                              );
-                            }
-                          }
-                          break;
-                        case TopicMenuItem.Block:
-                          GStorage.onBlock(
-                            _topicController.title!,
-                            isUser: false,
-                            isDelete: _topicController.isBlocked,
-                          );
-                          _topicController.isBlocked =
-                              !_topicController.isBlocked;
-                          break;
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: TopicMenuItem.Copy,
-                        child: Text(TopicMenuItem.Copy.name),
-                      ),
-                      PopupMenuItem(
-                        value: TopicMenuItem.Share,
-                        child: Text(TopicMenuItem.Share.name),
-                      ),
-                      if (_shouldShowActions)
-                        PopupMenuItem(
-                          value: TopicMenuItem.Sort,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: Text(TopicMenuItem.Sort.name),
-                              ),
-                              const Icon(Icons.arrow_right)
-                            ],
+                actions: _showTopicToolbar
+                    ? [
+                        if (!_topicController.isBlocked)
+                          IconButton(
+                            onPressed: () =>
+                                Get.toNamed('/search', parameters: {
+                              'title': _topicController.title!,
+                              'pageType': _topicController.entityType == 'topic'
+                                  ? 'tag'
+                                  : 'product_phone',
+                              'pageParam':
+                                  _topicController.entityType == 'topic'
+                                      ? _topicController.title!
+                                      : _topicController.id!,
+                            }),
+                            icon: const Icon(Icons.search),
+                            tooltip: 'Search',
                           ),
+                        PopupMenuButton(
+                          onSelected: (TopicMenuItem item) {
+                            switch (item) {
+                              case TopicMenuItem.Copy:
+                                Utils.copyText(Utils.getShareUri(
+                                  _topicController.entityType == 'topic'
+                                      ? _topicController.title!
+                                      : _topicController.id!,
+                                  _topicController.entityType == 'topic'
+                                      ? ShareType.t
+                                      : ShareType.product,
+                                ).toString());
+                                break;
+                              case TopicMenuItem.Share:
+                                SharePlus.instance.share(ShareParams(
+                                    uri: Utils.getShareUri(
+                                  _topicController.entityType == 'topic'
+                                      ? _topicController.title!
+                                      : _topicController.id!,
+                                  _topicController.entityType == 'topic'
+                                      ? ShareType.t
+                                      : ShareType.product,
+                                )));
+                                break;
+                              case TopicMenuItem.Sort:
+                                _showPopupMenu();
+                                break;
+                              case TopicMenuItem.Follow:
+                                if (_topicController.entityType == 'topic') {
+                                  GStorage.followTopic(
+                                    title: _topicController.title!,
+                                    url: '/t/${_topicController.title!}',
+                                    logo: _topicController.logo,
+                                    hotNumTxt:
+                                        _topicController.hotNumTxt?.toString(),
+                                    commentnumTxt: _topicController
+                                        .commentnumTxt
+                                        ?.toString(),
+                                  ).then((isAdded) {
+                                    SmartDialog.showToast(
+                                        isAdded ? '关注成功' : '已关注');
+                                  });
+                                  if (GlobalData().isLogin) {
+                                    _topicController.onGetFollow(
+                                      _topicController.isFollow,
+                                      _topicController.isFollow
+                                          ? "/v6/feed/unFollowTag"
+                                          : "/v6/feed/followTag",
+                                      tag: _topicController.title,
+                                    );
+                                  }
+                                } else {
+                                  if (GlobalData().isLogin) {
+                                    _topicController.postLikeDeleteFollow(
+                                      _topicController.id,
+                                      null,
+                                      isProduct: true,
+                                      isFollow: _topicController.isFollow,
+                                    );
+                                  }
+                                }
+                                break;
+                              case TopicMenuItem.Block:
+                                GStorage.onBlock(
+                                  _topicController.title!,
+                                  isUser: false,
+                                  isDelete: _topicController.isBlocked,
+                                );
+                                _topicController.isBlocked =
+                                    !_topicController.isBlocked;
+                                break;
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                              value: TopicMenuItem.Copy,
+                              child: Text(TopicMenuItem.Copy.name),
+                            ),
+                            PopupMenuItem(
+                              value: TopicMenuItem.Share,
+                              child: Text(TopicMenuItem.Share.name),
+                            ),
+                            if (_shouldShowActions)
+                              PopupMenuItem(
+                                value: TopicMenuItem.Sort,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: Text(TopicMenuItem.Sort.name),
+                                    ),
+                                    const Icon(Icons.arrow_right)
+                                  ],
+                                ),
+                              ),
+                            PopupMenuItem(
+                              value: TopicMenuItem.Follow,
+                              child: Text(_topicController.isFollow
+                                  ? 'UnFollow'
+                                  : 'Follow'),
+                            ),
+                            PopupMenuItem(
+                              value: TopicMenuItem.Block,
+                              child: Text(_topicController.isBlocked
+                                  ? 'UnBlock'
+                                  : 'Block'),
+                            ),
+                          ],
                         ),
-                      PopupMenuItem(
-                        value: TopicMenuItem.Follow,
-                        child: Text(
-                            _topicController.isFollow ? 'UnFollow' : 'Follow'),
-                      ),
-                      PopupMenuItem(
-                        value: TopicMenuItem.Block,
-                        child: Text(
-                            _topicController.isBlocked ? 'UnBlock' : 'Block'),
-                      ),
-                    ],
-                  ),
-                ],
+                      ]
+                    : null,
               ),
               body: _topicController.isBlocked
                   ? Center(
                       child: Text('${_topicController.title} is Blocked'),
                     )
-                  : TabBarView(
-                      controller: _tabController,
-                      children: _topicController.tabList!
-                          .map((item) => TopicContent(
-                                random: _random,
-                                tag: _topicController.tag,
-                                id: _topicController.id,
-                                index: _topicController.tabList!.indexOf(item),
-                                entityType: _topicController.entityType!,
-                                url: item.url.toString(),
-                                title: item.title.toString(),
-                              ))
-                          .toList(),
+                  : NotificationListener<ScrollNotification>(
+                      onNotification: _handleScrollNotification,
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: _topicController.tabList!
+                            .map((item) => TopicContent(
+                                  random: _random,
+                                  tag: _topicController.tag,
+                                  id: _topicController.id,
+                                  index:
+                                      _topicController.tabList!.indexOf(item),
+                                  entityType: _topicController.entityType!,
+                                  url: item.url.toString(),
+                                  title: item.title.toString(),
+                                ))
+                            .toList(),
+                      ),
                     ),
             )
           : Scaffold(
